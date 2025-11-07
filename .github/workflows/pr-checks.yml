@@ -1,9 +1,9 @@
-#pull validation
+# Pull request validation
 name: PR Checks
 on:
   pull_request:
     branches: [ main, develop ]
-  workflow_dispatch:  
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   validate:
@@ -35,7 +35,7 @@ jobs:
       
     - name: Check for merge conflicts
       run: |
-        if grep -r "<<<<<<< HEAD" . --exclude-dir=.git; then
+        if grep -r "<<<<<<< HEAD" . --exclude-dir=.git --exclude-dir=.github 2>/dev/null; then
           echo "❌ Merge conflict markers found!"
           exit 1
         else
