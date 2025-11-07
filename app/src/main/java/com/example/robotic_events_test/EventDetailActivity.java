@@ -7,6 +7,9 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -14,11 +17,14 @@ import java.util.Locale;
 public class EventDetailActivity extends AppCompatActivity {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault());
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+
+        db = FirebaseFirestore.getInstance();
 
         ImageView image   = findViewById(R.id.detailImage);
         TextView title    = findViewById(R.id.detailTitle);
@@ -30,6 +36,7 @@ public class EventDetailActivity extends AppCompatActivity {
         TextView org      = findViewById(R.id.detailOrganizer);
         TextView cap      = findViewById(R.id.detailCapacity);
         TextView desc     = findViewById(R.id.detailDescription);
+        TextView waitlistCount = findViewById(R.id.detailWaitlistCount); // NEW
 
         String id          = getIntent().getStringExtra("id");
         String t           = safe(getIntent().getStringExtra("title"));
@@ -53,6 +60,32 @@ public class EventDetailActivity extends AppCompatActivity {
         org.setText(organizerId);
         cap.setText(String.valueOf(totalCapacity));
         desc.setText(d);
+
+        // NEW: Load waitlist count
+        loadWaitlistCount(id, waitlistCount);
+    }
+
+    private void loadWaitlistCount(String eventId, TextView waitlistCount) {
+        if (eventId == null || eventId.isEmpty()) {
+            waitlistCount.setText("Waitlist: 0 users");
+            return;
+        }
+
+        db.collection("waitlists")
+                .whereEqualTo("eventId", eventId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        waitlistCount.setText("Waitlist: Error loading");
+                        return;
+                    }
+
+                    if (value != null) {
+                        int count = value.size();
+                        waitlistCount.setText("Waitlist: " + count + (count == 1 ? " user" : " users"));
+                    } else {
+                        waitlistCount.setText("Waitlist: 0 users");
+                    }
+                });
     }
 
     private String safe(String s) { return s == null ? "" : s; }

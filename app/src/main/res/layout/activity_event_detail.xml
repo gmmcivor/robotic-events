@@ -120,6 +120,14 @@
             android:text="Capacity"
             android:layout_marginTop="4dp" />
 
+        <TextView
+            android:id="@+id/detailWaitlistCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waitlist: Loading..."
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+
 
         <TextView
             android:id="@+id/detailDescription"
